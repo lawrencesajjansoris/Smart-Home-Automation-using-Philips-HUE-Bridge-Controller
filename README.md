@@ -1,1 +1,1 @@
-# Smart-Home-Automation-using-Philips-HUE-Bridge-Controller
+# Smart-Home-Automation-using-Philips-HUE-Bridge
