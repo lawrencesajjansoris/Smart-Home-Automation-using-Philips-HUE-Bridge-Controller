@@ -1,0 +1,77 @@
+#include <ESP8266HTTPClient.h>
+#include <ESP8266WiFi.h>
+#include <ArduinoJson.h>
+#include <WiFiClient.h>
+
+WiFiClient wifiClient;
+
+// IP of Hue gateway
+String ip = "192.168.178.31";
+
+// Hue gateway user name
+String user_name = "-vXR0rZhBx3tfJxSoEGeh-aMMOu6XxLdD64rh7Rq";
+
+// Wifi network SSID
+const char* ssid = "Apartment Y343";
+
+// Wifi network password
+const char* password = "39589826907211656127";
+
+//unsigned long previousMillis1 = 0;
+//unsigned long previousMillis2 = 0;
+
+
+void setup() {
+  // put your setup code here, to run once:
+  Serial.begin(115200);
+  WiFi.begin(ssid, password);
+  Serial.print("Connecting to WiFi");
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(1000);
+    Serial.print(".");
+  }
+  Serial.println("Connected to the WiFi network");
+}
+
+void loop() {
+  HTTPClient http;
+  
+  String req_string;
+  String response;
+  req_string = "http://";
+  req_string += ip; ////  req_string = req_string + ip  
+  req_string += "/api/";
+  req_string += user_name;
+  req_string += "/sensors/3/";
+  Serial.println(req_string);
+  http.begin(wifiClient, req_string);
+  http.addHeader("Content-Type", "text/plain");
+
+  int httpResponseCode = http.GET();
+
+  if (httpResponseCode > 0) {
+    response = http.getString();
+    Serial.println(httpResponseCode);
+    Serial.println(response);
+  }
+
+  else {
+    Serial.print("Error on sending PUT Request: ");
+    Serial.println(httpResponseCode);
+  }
+  // JSON PARSER CODE(DECODING THE JSON STRING FOR GETTING THE USEFUL VALUES)
+  DynamicJsonDocument doc(900);
+  DeserializationError error = deserializeJson(doc, response);
+   if (!error) {
+    String LightLevel = doc["state"]["lightlevel"]; // 
+    Serial.print("LightLevel: ");
+    Serial.println(LightLevel);
+    
+  } else {
+    Serial.print(F("deserializeJson() failed: "));
+    Serial.println(error.f_str());
+    return;
+  }
+  delay(2000);
+  http.end();
+}
